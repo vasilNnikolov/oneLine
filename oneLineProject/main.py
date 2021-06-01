@@ -25,10 +25,6 @@ class OneLineProgram:
                                                                      self.set_canvas())
                   ).place(x=0.4*self.size[0], y=0.8*self.size[1])
 
-
-
-
-
     def verify_filename(self):
         if self.filename.split(".")[1] in self.allowed_images_types:
             return True
@@ -70,12 +66,15 @@ class OneLineProgram:
             print(f"valid filename: {self.filename}")
             # set canvas showing image
             canvas_size = (int(0.6*self.size[0]), int(0.6*self.size[1]))
-            image_label = tk.Label(self.window, bg="cyan")
+            image_canvas = tk.Canvas(self.window, width=canvas_size[0], height=canvas_size[1], bg="cyan")
+            image_canvas.place(x=0, y=0)
+            # pil_image = Image.open(self.filename)
             pil_image = Image.open(self.filename).resize(canvas_size)
             pil_image.show()
             img = ImageTk.PhotoImage(pil_image)
-            image_label["image"] = img
-            image_label.place(x=0, y=0)
+            image_canvas.create_image(0, 0, anchor=tk.NW, image=img)
+            image_canvas.image = img
+
 
 
     def clear_window(self):
