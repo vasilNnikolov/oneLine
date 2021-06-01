@@ -1,4 +1,5 @@
 import tkinter as tk
+import oneLIneLibrary as one
 from tkinter import filedialog
 from PIL import ImageTk, Image
 
@@ -7,8 +8,6 @@ class OneLineProgram:
         self.window = tk.Tk()
         self.size = (1000, 700)
         self.window.geometry(f"{self.size[0]}x{self.size[1]}")
-        # self.next_button = tk.Button(self.window, text="Next")
-        # self.back_button = tk.Button(self.window, text="Back")
         self.filename = None
         self.allowed_images_types = ["jpg", "jpeg", "png"]
         self.set_start_screen()
@@ -37,7 +36,7 @@ class OneLineProgram:
         for type in self.allowed_images_types:
             filetype_string += f".{type} "
 
-        self.filename = filedialog.askopenfilename(initialdir="~",
+        self.filename = filedialog.askopenfilename(initialdir="~/Pictures",
                                               title="Select an image",
                                               filetypes=[("Images", filetype_string)])
 
@@ -89,18 +88,54 @@ class OneLineProgram:
             element.destroy()
 
     def set_second_window(self):
-        print("setting second window")
         self.clear_window()
         self.window.title("Choose image parameters")
 
+        # create pixel type label
+        text_pixelisation_type = tk.StringVar(self.window)
+        text_pixelisation_type.set("Pixelisation type")
+        pixel_type_label = tk.Label(textvariable=text_pixelisation_type)
+        pixel_type_label.place(x=int(0.3*self.size[0]), y=int(0.1*self.size[1]))
+
+        # create pixel type dropdown menu
+        pixel_options = ["Pixel", "Superpixel"]
+
+        pixel_type = tk.StringVar(self.window)
+        pixel_type.set(pixel_options[0])
+        pixel_dropdown = tk.OptionMenu(self.window, pixel_type, *pixel_options)
+        pixel_dropdown.place(x=int(0.5*self.size[0]), y=int(0.1*self.size[1]))
+
+        # create instruction type label
+        text_instruction_type = tk.StringVar(self.window)
+        text_instruction_type.set("Instruction type")
+        instruction_type_label = tk.Label(textvariable=text_instruction_type)
+        instruction_type_label.place(x=int(0.3*self.size[0]), y=int(0.3*self.size[1]))
+
+        # create instruction type dropdown menu
+        instruction_options = ["Export", "Step by step"]
+
+        instruction_type = tk.StringVar(self.window)
+        instruction_type.set(instruction_options[0])
+        instruction_type_dropdown = tk.OptionMenu(self.window, instruction_type, *instruction_options)
+        instruction_type_dropdown.place(x=int(0.5*self.size[0]), y=int(0.3*self.size[1]))
+
         # set controll buttons
-        self.set_next_button(command=None, enabled=False)
+        def next_button_action():
+            if instruction_type.get() == instruction_options[1]: # step by step
+                pass
+            else: # export the image
+                # go to the next screen, with total pixel number field and filename field
+                pass
+
+
+        self.set_next_button(command=lambda: next_button_action(), enabled=True)
         self.set_back_button(command=self.set_start_screen, enabled=True)
 
 
 def main():
     program = OneLineProgram()
     program.window.mainloop()
+
 
 if __name__ == "__main__":
     main()
