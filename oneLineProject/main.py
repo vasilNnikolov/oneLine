@@ -127,7 +127,6 @@ class OneLineProgram:
                 # go to the next screen, with total pixel number field and filename field
                 pass
 
-
         self.set_next_button(command=lambda: next_button_action(), enabled=True)
         self.set_back_button(command=self.set_start_screen, enabled=True)
 
