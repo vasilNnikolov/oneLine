@@ -7,8 +7,8 @@ class OneLineProgram:
         self.window = tk.Tk()
         self.size = (1000, 700)
         self.window.geometry(f"{self.size[0]}x{self.size[1]}")
-        self.next_button = tk.Button(self.window, text="Next")
-        self.back_button = tk.Button(self.window, text="Back")
+        # self.next_button = tk.Button(self.window, text="Next")
+        # self.back_button = tk.Button(self.window, text="Back")
         self.filename = None
         self.allowed_images_types = ["jpg", "jpeg", "png"]
         self.set_start_screen()
@@ -18,10 +18,11 @@ class OneLineProgram:
         self.window.title("Choose an image file")
 
         # set controll buttons
-        self.set_next_button(command=lambda: self.set_second_window(), enabled=False)
+        self.set_next_button(enabled=False)
         self.set_back_button(command=self.window.destroy, enabled=True)
         tk.Button(self.window, text="Select Image", command=lambda: (self.get_filename(),
-                                                                     self.set_next_button(enabled=self.verify_filename()),
+                                                                     self.set_next_button(command=lambda: self.set_second_window(),
+                                                                                          enabled=self.verify_filename()),
                                                                      self.set_canvas())
                   ).place(x=0.4*self.size[0], y=0.8*self.size[1])
 
@@ -47,9 +48,10 @@ class OneLineProgram:
         :param enabled: whether the next button should be active or not
         :return: none
         """
-        self.next_button.config(state="normal" if enabled else "disabled")
-        self.next_button.config(command=command)
-        self.next_button.place(x=0.8*self.size[0], y=0.8*self.size[1])
+        next_button = tk.Button(self.window, text="Next")
+        next_button.config(state="normal" if enabled else "disabled")
+        next_button.config(command=command)
+        next_button.place(x=0.8*self.size[0], y=0.8*self.size[1])
 
     def set_back_button(self, command=None, enabled=False):
         """
@@ -58,9 +60,10 @@ class OneLineProgram:
         :param enabled: whether the Back button should be active or not
         :return: none
         """
-        self.back_button.config(state="normal" if enabled else "disabled")
-        self.back_button.config(command=command)
-        self.back_button.place(x=0.1*self.size[0], y=0.8*self.size[1])
+        back_button = tk.Button(self.window, text="Back")
+        back_button.config(state="normal" if enabled else "disabled")
+        back_button.config(command=command)
+        back_button.place(x=0.1*self.size[0], y=0.8*self.size[1])
 
     def set_canvas(self):
         if self.verify_filename():
@@ -82,16 +85,17 @@ class OneLineProgram:
             image_canvas.image = img
 
     def clear_window(self):
-        for element in self.window.slaves():
+        for element in self.window.winfo_children():
             element.destroy()
 
     def set_second_window(self):
+        print("setting second window")
         self.clear_window()
         self.window.title("Choose image parameters")
 
         # set controll buttons
-        # self.set_next_button(command=None, enabled=False)
-        # self.set_back_button(command=self.set_start_screen, enabled=True)
+        self.set_next_button(command=None, enabled=False)
+        self.set_back_button(command=self.set_start_screen, enabled=True)
 
 
 def main():
