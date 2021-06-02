@@ -1,5 +1,5 @@
 import tkinter as tk
-import oneLIneLibrary as one
+import oneLineLibrary as one
 from tkinter import filedialog
 from PIL import ImageTk, Image, ImageOps, ImageDraw
 
