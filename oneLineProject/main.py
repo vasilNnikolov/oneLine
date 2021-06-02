@@ -40,26 +40,26 @@ class OneLineProgram:
                                               title="Select an image",
                                               filetypes=[("Images", filetype_string)])
 
-    def set_next_button(self, command=None, enabled=False):
+    def set_next_button(self, command=None, enabled=False, text="Next"):
         """
         sets the Next button for every screen of the app
         :param command: the lambda function to be executed when the Next button is pressed
         :param enabled: whether the next button should be active or not
         :return: none
         """
-        next_button = tk.Button(self.window, text="Next")
+        next_button = tk.Button(self.window, text=text)
         next_button.config(state="normal" if enabled else "disabled")
         next_button.config(command=command)
         next_button.place(x=0.8*self.size[0], y=0.8*self.size[1])
 
-    def set_back_button(self, command=None, enabled=False):
+    def set_back_button(self, command=None, enabled=False, text="Back"):
         """
         sets the back button for every screen of the app
         :param command: the lambda function to be executed when the Back button is pressed
         :param enabled: whether the Back button should be active or not
         :return: none
         """
-        back_button = tk.Button(self.window, text="Back")
+        back_button = tk.Button(self.window, text=text)
         back_button.config(state="normal" if enabled else "disabled")
         back_button.config(command=command)
         back_button.place(x=0.1*self.size[0], y=0.8*self.size[1])
@@ -92,9 +92,7 @@ class OneLineProgram:
         self.window.title("Choose image parameters")
 
         # create pixel type label
-        text_pixelisation_type = tk.StringVar(self.window)
-        text_pixelisation_type.set("Pixelisation type")
-        pixel_type_label = tk.Label(textvariable=text_pixelisation_type)
+        pixel_type_label = tk.Label(self.window, text="Pixelisation type")
         pixel_type_label.place(x=int(0.3*self.size[0]), y=int(0.1*self.size[1]))
 
         # create pixel type dropdown menu
@@ -106,9 +104,7 @@ class OneLineProgram:
         pixel_dropdown.place(x=int(0.5*self.size[0]), y=int(0.1*self.size[1]))
 
         # create instruction type label
-        text_instruction_type = tk.StringVar(self.window)
-        text_instruction_type.set("Instruction type")
-        instruction_type_label = tk.Label(textvariable=text_instruction_type)
+        instruction_type_label = tk.Label(text="Instruction type")
         instruction_type_label.place(x=int(0.3*self.size[0]), y=int(0.3*self.size[1]))
 
         # create instruction type dropdown menu
@@ -119,16 +115,42 @@ class OneLineProgram:
         instruction_type_dropdown = tk.OptionMenu(self.window, instruction_type, *instruction_options)
         instruction_type_dropdown.place(x=int(0.5*self.size[0]), y=int(0.3*self.size[1]))
 
+        # create number of pixels label
+        nPixels_label = tk.Label(text="Number of pixels\n (at least 10000)")
+        nPixels_label.place(x=int(0.3*self.size[0]), y=int(0.5*self.size[1]))
+
+        # create number of pixels input field
+        nPixels_variable = tk.StringVar()
+        nPixels_variable.set("15000")
+        nPixels_entry = tk.Entry(self.window, textvariable=nPixels_variable)
+        nPixels_entry.place(x=int(0.5*self.size[0]), y=int(0.5*self.size[1]))
+
         # set controll buttons
         def next_button_action():
-            if instruction_type.get() == instruction_options[1]: # step by step
-                pass
-            else: # export the image
-                # go to the next screen, with total pixel number field and filename field
-                pass
+            # verify whether input data is correct
+            # not done yet
+
+            self.set_final_screen(instruction_type.get(), pixel_type.get(), int(nPixels_variable.get()))
+
 
         self.set_next_button(command=lambda: next_button_action(), enabled=True)
         self.set_back_button(command=self.set_start_screen, enabled=True)
+
+    def set_final_screen(self, instruction_type, pixel_type, nPixels):
+        self.clear_window()
+        if instruction_type == "Export" and pixel_type == "Pixel":
+            self.window.title("Confirm Export")
+            sidelength = int(nPixels**0.5) + 1
+            image = Image.open(self.filename).resize((sidelength, sidelength)).convert("LA")
+
+            image_to_show = image.resize((int(0.7*self.size[1]), int(0.7*self.size[1])))
+
+            canvas_size = (int(0.6*self.size[1]), int(0.6*self.size[1]))
+            image_canvas = tk.Canvas(self.window, width=canvas_size[0], height=canvas_size[1], bg="cyan")
+            image_canvas.place(x=int(0.2*self.size[0]), y=50)
+            img = ImageTk.PhotoImage(image_to_show)
+            image_canvas.create_image(int(canvas_size[0]/2), int(canvas_size[1]/2), image=img)
+            image_canvas.image = img
 
 
 def main():
