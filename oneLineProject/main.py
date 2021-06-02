@@ -1,7 +1,7 @@
 import tkinter as tk
 import oneLIneLibrary as one
 from tkinter import filedialog
-from PIL import ImageTk, Image
+from PIL import ImageTk, Image, ImageOps, ImageDraw
 
 class OneLineProgram:
     def __init__(self):
@@ -36,7 +36,7 @@ class OneLineProgram:
         for type in self.allowed_images_types:
             filetype_string += f".{type} "
 
-        self.filename = filedialog.askopenfilename(initialdir="~/Pictures",
+        self.filename = filedialog.askopenfilename(initialdir="~/software/oneLine/oneLineProject",
                                               title="Select an image",
                                               filetypes=[("Images", filetype_string)])
 
@@ -139,18 +139,33 @@ class OneLineProgram:
     def set_final_screen(self, instruction_type, pixel_type, nPixels):
         self.clear_window()
         if instruction_type == "Export" and pixel_type == "Pixel":
-            self.window.title("Confirm Export")
-            sidelength = int(nPixels**0.5) + 1
-            image = Image.open(self.filename).resize((sidelength, sidelength)).convert("LA")
+            self.final_screen_pixel_export(nPixels)
+            self.set_next_button(command=lambda: )
+        elif instruction_type == "Step by step" and pixel_type == "Pixel":
+            pass
+        elif instruction_type == "Export" and pixel_type == "Superpixel":
+            pass
+        elif instruction_type == "Step by step" and pixel_type == "Superpixel":
+            pass
 
-            image_to_show = image.resize((int(0.7*self.size[1]), int(0.7*self.size[1])))
+        # set back button
+        self.set_back_button(command=lambda: self.set_second_window(), enabled=True)
 
-            canvas_size = (int(0.6*self.size[1]), int(0.6*self.size[1]))
-            image_canvas = tk.Canvas(self.window, width=canvas_size[0], height=canvas_size[1], bg="cyan")
-            image_canvas.place(x=int(0.2*self.size[0]), y=50)
-            img = ImageTk.PhotoImage(image_to_show)
-            image_canvas.create_image(int(canvas_size[0]/2), int(canvas_size[1]/2), image=img)
-            image_canvas.image = img
+    def final_screen_pixel_export(self, nPixels):
+        self.window.title("Confirm Export")
+        sidelength = int(nPixels ** 0.5) + 1
+
+        image = Image.open(self.filename).resize((sidelength, sidelength)).convert("LA")
+        canvas_size = (int(0.7 * self.size[1]), int(0.7 * self.size[1]))
+
+        image_to_show = image.resize(canvas_size, resample=Image.NEAREST)
+        output = one.make_picture_circular(image_to_show)
+
+        image_canvas = tk.Canvas(self.window, width=canvas_size[0], height=canvas_size[1], bg="cyan")
+        image_canvas.place(x=int(0.2 * self.size[0]), y=50)
+        img = ImageTk.PhotoImage(output)
+        image_canvas.create_image(int(canvas_size[0] / 2), int(canvas_size[1] / 2), image=img)
+        image_canvas.image = img
 
 
 def main():
