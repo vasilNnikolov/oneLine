@@ -6,10 +6,12 @@ from PIL import ImageTk, Image, ImageOps, ImageDraw
 class OneLineProgram:
     def __init__(self):
         self.window = tk.Tk()
-        self.size = (1000, 700)
+        self.size = (1500, 1000)
         self.window.geometry(f"{self.size[0]}x{self.size[1]}")
         self.filename = None
         self.allowed_images_types = ["jpg", "jpeg", "png"]
+        self.pixel_list = []
+        self.nPixels = 100
         self.set_start_screen()
 
     def set_start_screen(self):
@@ -116,12 +118,12 @@ class OneLineProgram:
         instruction_type_dropdown.place(x=int(0.5*self.size[0]), y=int(0.3*self.size[1]))
 
         # create number of pixels label
-        nPixels_label = tk.Label(text="Number of pixels\n (at least 10000)")
+        nPixels_label = tk.Label(text="Sidelength")
         nPixels_label.place(x=int(0.3*self.size[0]), y=int(0.5*self.size[1]))
 
         # create number of pixels input field
         nPixels_variable = tk.StringVar()
-        nPixels_variable.set("15000")
+        nPixels_variable.set("100")
         nPixels_entry = tk.Entry(self.window, textvariable=nPixels_variable)
         nPixels_entry.place(x=int(0.5*self.size[0]), y=int(0.5*self.size[1]))
 
@@ -129,18 +131,17 @@ class OneLineProgram:
         def next_button_action():
             # verify whether input data is correct
             # not done yet
-
-            self.set_final_screen(instruction_type.get(), pixel_type.get(), int(nPixels_variable.get()))
-
-
+            self.nPixels = int(nPixels_variable.get())
+            self.pixel_list = []
+            self.set_final_screen(instruction_type.get(), pixel_type.get())
         self.set_next_button(command=lambda: next_button_action(), enabled=True)
         self.set_back_button(command=self.set_start_screen, enabled=True)
 
-    def set_final_screen(self, instruction_type, pixel_type, nPixels):
+    def set_final_screen(self, instruction_type, pixel_type):
         self.clear_window()
         if instruction_type == "Export" and pixel_type == "Pixel":
-            self.final_screen_pixel_export(nPixels)
-            self.set_next_button(command=lambda: )
+            self.set_final_screen_pixel_export()
+            # self.set_next_button(command=self.window.destroy, text="Color", enabled=True)
         elif instruction_type == "Step by step" and pixel_type == "Pixel":
             pass
         elif instruction_type == "Export" and pixel_type == "Superpixel":
@@ -151,9 +152,9 @@ class OneLineProgram:
         # set back button
         self.set_back_button(command=lambda: self.set_second_window(), enabled=True)
 
-    def final_screen_pixel_export(self, nPixels):
+    def set_final_screen_pixel_export(self):
         self.window.title("Confirm Export")
-        sidelength = int(nPixels ** 0.5) + 1
+        sidelength = self.nPixels
 
         image = Image.open(self.filename).resize((sidelength, sidelength)).convert("LA")
         canvas_size = (int(0.7 * self.size[1]), int(0.7 * self.size[1]))
@@ -166,6 +167,34 @@ class OneLineProgram:
         img = ImageTk.PhotoImage(output)
         image_canvas.create_image(int(canvas_size[0] / 2), int(canvas_size[1] / 2), image=img)
         image_canvas.image = img
+
+        # draw on image
+        # bind sth to <B1-Motion>
+        def set_pixel_list(event):
+            x, y = event.x, event.y
+            pixel_sidelength = canvas_size[0] / self.nPixels
+            pixel_coordinates = (int(x/pixel_sidelength), int(y/pixel_sidelength))
+            if pixel_coordinates not in self.pixel_list:
+                fill = "green"
+                if len(self.pixel_list) == 0:
+                    # draw the starting pixel red
+                    fill = "red"
+                image_canvas.create_rectangle((pixel_coordinates[0]*pixel_sidelength,
+                                               pixel_coordinates[1]*pixel_sidelength,
+                                               (pixel_coordinates[0] + 1)*pixel_sidelength,
+                                               (pixel_coordinates[1] + 1)*pixel_sidelength),
+                                              fill=fill)
+
+                self.pixel_list.append(pixel_coordinates)
+
+        image_canvas.bind("<B1-Motion>", set_pixel_list)
+
+        # make undo button, removes last pixel placed
+
+
+
+
+
 
 
 def main():
