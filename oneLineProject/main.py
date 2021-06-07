@@ -194,9 +194,6 @@ class OneLineProgram:
 
 
 
-
-
-
 def main():
     program = OneLineProgram()
     program.window.mainloop()
