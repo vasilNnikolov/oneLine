@@ -1,6 +1,8 @@
 import math
 import tkinter as tk
+import random
 from PIL import Image, ImageDraw
+
 def make_picture_circular(image):
     w, h = image.size
     output = Image.new("LA", (w, h), 0)
@@ -13,37 +15,62 @@ def make_picture_circular(image):
 
     return output
 
+def s(t):
+    return 1/(1 + math.exp(-50*(t - 0.85)))
+
+def f(t):
+    return 1.1*(1.1/(t + 0.1) - 1)*s(t) + 1
+
+def atan3(y, x):
+    if y > 0:
+        return math.atan2(y, x)
+    else:
+        return math.atan2(y, x) + 2*math.pi
 
 def make_spiral(turns, image_size, start_point, end_point):
-    # r = R0 - (R0-c/2)/angle * theta - c/(1 + e^(-k1*(theta - angle))) + c/(1+e^(k2*theta))
-    # k1 determines how sharp the central bar is
-    # k2 determines how sharp the start and end of the spiral are
-    # c determines the size of the central bar and the start and end of the spiral
-    # (r, theta) -> (r, theta + k*(R-r))
-    R = min(image_size)/2
-    result = Image.new("LA", image_size, 0)
-    N = 300
-    draw = ImageDraw.Draw(result)
-    line_width = 2
-    for i in range(N):
-        r = R*(N/2 - i)/N
-        theta = math.pi/3
+    R = min(image_size[0], image_size[1])/2
+    result = Image.new("RGB", image_size, "white")
+    N = 1000
+    angle_start = atan3(image_size[1]/2 - start_point[1], start_point[0] - image_size[0]/2)
+    angle_end = atan3(image_size[1]/2 - end_point[1], end_point[0] - image_size[0]/2)
 
-        r_new = r
-        theta_new = theta + turns*(R -r)
-        center = (image_size[0]/2 + r_new*math.cos(theta_new), image_size[1]/2 + r_new*math.sin(theta_new))
-        draw.ellipse((center[0] - line_width,
-                      center[1] - line_width,
-                      center[0] + line_width,
-                      center[1] + line_width), fill="white")
+    if angle_end < angle_start:
+        angle_end, angle_start = angle_start, angle_end
+        start_point, end_point = end_point, start_point
+        print("swap")
+    print(angle_start, angle_end)
+    draw = ImageDraw.Draw(result)
+    line_width = 3
+    last_x_start, last_y_start = 0, 0
+    last_x_end, last_y_end = 0, 0
+    for i in range(N, 0, -1):
+        t = i/N
+        r = R*t
+
+        theta_start = turns*(1 - f(t)*t) - angle_start*s(t)
+        theta_end = turns*(1 - f(t)*t) - angle_end*s(t)
+        center_start = (image_size[0]/2 + r*math.cos(theta_start), image_size[1]/2 - r*math.sin(theta_start))
+        center_end = (image_size[0]/2 - r*math.cos(theta_end), image_size[1]/2 + r*math.sin(theta_end))
+        if last_x_start != 0 and last_y_start != 0:
+            draw.line((center_start[0], center_start[1], last_x_start, last_y_start), fill="black")
+            draw.line((center_end[0], center_end[1], last_x_end, last_y_end), fill="black")
+        last_x_start, last_y_start = center_start
+        last_x_end, last_y_end = center_end
 
     return result
 
-img = make_spiral(5, (500, 500), 0, 0)
+if __name__ == "__main__":
+    image_size = (500, 500)
 
-img.show()
+    start_angle = 2*random.random()*math.pi
+    end_angle = 2*random.random()*math.pi
+    start = (250 + 250*math.cos(start_angle), 250 + 250*math.sin(start_angle))
+    end = (250 + 250*math.cos(end_angle), 250 + 250*math.sin(end_angle))
+    print(start, end)
 
-
-
-
+    img = make_spiral(14, image_size, start, end)
+    draw = ImageDraw.Draw(img)
+    draw.ellipse((start[0] - 5, start[1] - 5, start[0] + 5, start[1] + 5), fill="green")
+    draw.ellipse((end[0] - 5, end[1] - 5, end[0] + 5, end[1] + 5), fill="red")
+    img.show()
 
