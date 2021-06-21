@@ -2,7 +2,6 @@ import math
 import tkinter as tk
 import random
 from PIL import Image, ImageDraw
-import matplotlib.pyplot as plt
 
 
 def make_picture_circular(image):
@@ -112,14 +111,9 @@ if __name__ == "__main__":
     end = (250 + 250*math.cos(end_angle), 250 + 250*math.sin(end_angle))
     print(start, end)
 
-    img = make_square_spiral(18, image_size, start, end)
-    draw = ImageDraw.Draw(img)
-    draw.ellipse((start[0] - 5, start[1] - 5, start[0] + 5, start[1] + 5), fill="green")
-    draw.ellipse((end[0] - 5, end[1] - 5, end[0] + 5, end[1] + 5), fill="red")
+    img = make_square_spiral(0, image_size, start, end)
+    # draw = ImageDraw.Draw(img)
+    # draw.ellipse((start[0] - 5, start[1] - 5, start[0] + 5, start[1] + 5), fill="green")
+    # draw.ellipse((end[0] - 5, end[1] - 5, end[0] + 5, end[1] + 5), fill="red")
     img.show()
-
-    # xs = [i*2*math.pi/1000 for i in range(1000)]
-    # ys = [distance_to_center(x) for x in xs]
-    # plt.plot(xs, ys)
-    # plt.show()
 

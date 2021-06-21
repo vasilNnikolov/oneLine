@@ -10,7 +10,8 @@ class OneLineProgram:
         self.window.geometry(f"{self.size[0]}x{self.size[1]}")
         self.filename = None
         self.allowed_images_types = ["jpg", "jpeg", "png"]
-        self.pixel_list = []
+        self.pixel_list = [] # list of lists of pixel orders, in a loop
+        # len(pixel_list) should be small
         self.nPixels = 100
         self.set_start_screen()
 
@@ -143,11 +144,11 @@ class OneLineProgram:
             self.set_final_screen_pixel_export()
             # self.set_next_button(command=self.window.destroy, text="Color", enabled=True)
         elif instruction_type == "Step by step" and pixel_type == "Pixel":
-            pass
+            self.set_final_screen_pixel_SBS()
         elif instruction_type == "Export" and pixel_type == "Superpixel":
-            pass
+            self.set_final_screen_superpixel_export()
         elif instruction_type == "Step by step" and pixel_type == "Superpixel":
-            pass
+            self.set_final_screen_superpixel_SBS()
 
         # set back button
         self.set_back_button(command=lambda: self.set_second_window(), enabled=True)
@@ -175,29 +176,37 @@ class OneLineProgram:
             pixel_sidelength = canvas_size[0] / self.nPixels
             pixel_coordinates = (int(x/pixel_sidelength), int(y/pixel_sidelength))
             if pixel_coordinates not in self.pixel_list:
+                # check if pixel borders the last pixel on the list
+                is_bordering_last_pixel = True
                 fill = "green"
                 if len(self.pixel_list) == 0:
                     # draw the starting pixel red
                     fill = "red"
-                image_canvas.create_rectangle((pixel_coordinates[0]*pixel_sidelength,
-                                               pixel_coordinates[1]*pixel_sidelength,
-                                               (pixel_coordinates[0] + 1)*pixel_sidelength,
-                                               (pixel_coordinates[1] + 1)*pixel_sidelength),
-                                              fill=fill)
+                else:
+                    is_bordering_last_pixel = abs(pixel_coordinates[0] - self.pixel_list[-1][0]) == 1
+                    is_bordering_last_pixel ^= abs(pixel_coordinates[1] - self.pixel_list[-1][1]) == 1
+                if is_bordering_last_pixel:
+                    image_canvas.create_rectangle((pixel_coordinates[0]*pixel_sidelength,
+                                                   pixel_coordinates[1]*pixel_sidelength,
+                                                   (pixel_coordinates[0] + 1)*pixel_sidelength,
+                                                   (pixel_coordinates[1] + 1)*pixel_sidelength),
+                                                  fill=fill)
 
-                self.pixel_list.append(pixel_coordinates)
+                    self.pixel_list.append(pixel_coordinates)
 
         image_canvas.bind("<B1-Motion>", set_pixel_list)
 
         # make undo button, removes last pixel placed
 
+    def set_final_screen_superpixel_export(self):
+        pass
 
+    def set_final_screen_pixel_SBS(self):
+        pass
 
-
-def main():
-    program = OneLineProgram()
-    program.window.mainloop()
-
+    def set_final_screen_superpixel_SBS(self):
+        pass
 
 if __name__ == "__main__":
-    main()
+    program = OneLineProgram()
+    program.window.mainloop()
