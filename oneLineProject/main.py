@@ -183,8 +183,8 @@ class OneLineProgram:
                     # draw the starting pixel red
                     fill = "red"
                 else:
-                    is_bordering_last_pixel = abs(pixel_coordinates[0] - self.pixel_list[-1][0]) == 1
-                    is_bordering_last_pixel ^= abs(pixel_coordinates[1] - self.pixel_list[-1][1]) == 1
+                    is_bordering_last_pixel = -1 <= (pixel_coordinates[0] - self.pixel_list[-1][0]) <= 1
+                    is_bordering_last_pixel &= -1 <= (pixel_coordinates[0] - self.pixel_list[-1][0]) <= 1
                 if is_bordering_last_pixel:
                     image_canvas.create_rectangle((pixel_coordinates[0]*pixel_sidelength,
                                                    pixel_coordinates[1]*pixel_sidelength,
@@ -197,6 +197,13 @@ class OneLineProgram:
         image_canvas.bind("<B1-Motion>", set_pixel_list)
 
         # make undo button, removes last pixel placed
+        def reset_last_pixel():
+            pixel_to_remove = self.pixel_list[-1]
+            self.pixel_list.pop(-1)
+            print(self.pixel_list)
+            print(pixel_to_remove)
+        tk.Button(self.window, text="Undo", command=reset_last_pixel).place(x=0.5*self.size[0], y=0.9*self.size[1])
+
 
     def set_final_screen_superpixel_export(self):
         pass
