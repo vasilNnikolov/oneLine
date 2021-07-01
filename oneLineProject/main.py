@@ -1,12 +1,8 @@
 import tkinter as tk
-import oneLineLibrary as one
 import fileSelector
 import chooseImageParams
 import finalScreen
 import appNativeFunctions
-
-from tkinter import filedialog
-from PIL import ImageTk, Image, ImageOps, ImageDraw
 
 class OneLineProgram:
     def __init__(self):
@@ -19,6 +15,7 @@ class OneLineProgram:
         # len(pixel_list) should be small
         self.nPixels = 100
         self.set_start_screen()
+
     # app native functions
     def set_next_button(self, command=None, enabled=False, text="Next"):
         appNativeFunctions.set_next_button(self, command, enabled, text)
@@ -61,6 +58,7 @@ class OneLineProgram:
 
     def set_final_screen_superpixel_SBS(self):
         finalScreen.set_final_screen_superpixel_SBS(self)
+
 
 if __name__ == "__main__":
     program = OneLineProgram()
