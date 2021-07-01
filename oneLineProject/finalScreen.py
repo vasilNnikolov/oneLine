@@ -70,6 +70,15 @@ def set_final_screen_pixel_export(app: OneLineProgram):
                                                    (second_to_last_pixel[0] + 1) * pixel_sidelength,
                                                    (second_to_last_pixel[1] + 1) * pixel_sidelength),
                                                   fill="yellow", outline="")
+                    # draw line representing the connection from one pixel to the next
+                    start_point = ((app.pixel_list[-2][0] + app.pixel_list[-3][0] + 1)*pixel_sidelength/2,
+                                   (app.pixel_list[-2][1] + app.pixel_list[-3][1] + 1)*pixel_sidelength/2)
+
+                    end_point = ((app.pixel_list[-2][0] + app.pixel_list[-1][0] + 1)*pixel_sidelength/2,
+                                 (app.pixel_list[-2][1] + app.pixel_list[-1][1] + 1)*pixel_sidelength/2)
+
+                    image_canvas.create_line(start_point[0], start_point[1], end_point[0], end_point[1], fill="black")
+
 
     image_canvas.bind("<B1-Motion>", set_pixel_list)
 
