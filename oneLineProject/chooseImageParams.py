@@ -34,7 +34,7 @@ def set_second_window(app):
 
     # create number of pixels input field
     nPixels_variable = tk.StringVar()
-    nPixels_variable.set("100")
+    nPixels_variable.set("20")
     nPixels_entry = tk.Entry(app.window, textvariable=nPixels_variable)
     nPixels_entry.place(x=int(0.5 * app.size[0]), y=int(0.5 * app.size[1]))
 

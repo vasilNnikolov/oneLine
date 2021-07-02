@@ -71,11 +71,9 @@ def set_final_screen_pixel_export(app: OneLineProgram):
                                                    (second_to_last_pixel[1] + 1) * pixel_sidelength),
                                                   fill="yellow", outline="")
                     # draw line representing the connection from one pixel to the next
-                    start_point = ((app.pixel_list[-2][0] + app.pixel_list[-3][0] + 1)*pixel_sidelength/2,
-                                   (app.pixel_list[-2][1] + app.pixel_list[-3][1] + 1)*pixel_sidelength/2)
+                    start_point = ((app.pixel_list[-3][0] + 0.5)*pixel_sidelength, (app.pixel_list[-3][1] + 0.5)*pixel_sidelength)
 
-                    end_point = ((app.pixel_list[-2][0] + app.pixel_list[-1][0] + 1)*pixel_sidelength/2,
-                                 (app.pixel_list[-2][1] + app.pixel_list[-1][1] + 1)*pixel_sidelength/2)
+                    end_point = ((app.pixel_list[-2][0] + 0.5)*pixel_sidelength, (app.pixel_list[-2][1] + 0.5)*pixel_sidelength)
 
                     image_canvas.create_line(start_point[0], start_point[1], end_point[0], end_point[1], fill="black")
 
@@ -105,7 +103,7 @@ def set_final_screen_pixel_export(app: OneLineProgram):
                                                (last_pixel[0] + 1) * pixel_sidelength,
                                                (last_pixel[1] + 1) * pixel_sidelength),
                                               fill="green",
-                                              outline="")  # tkinter dOeSnT sUpPoRt RgB
+                                              outline="")
 
     tk.Button(app.window, text="Undo", command=reset_last_pixel).place(x=0.5 * app.size[0], y=0.9 * app.size[1])
 
