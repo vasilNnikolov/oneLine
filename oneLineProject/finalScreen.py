@@ -108,7 +108,11 @@ def set_final_screen_pixel_export(app: OneLineProgram):
     tk.Button(app.window, text="Undo", command=reset_last_pixel).place(x=0.5 * app.size[0], y=0.9 * app.size[1])
 
 def set_final_screen_superpixel_export(app):
-    pass
+
+
+
+
+
 
 def set_final_screen_pixel_SBS(app):
     pass
