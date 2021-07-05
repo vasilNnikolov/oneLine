@@ -1,6 +1,4 @@
 import math
-import tkinter as tk
-import random
 from PIL import Image, ImageDraw
 
 

@@ -1,9 +1,10 @@
 import tkinter as tk
 import oneLineLibrary as one
-from main import OneLineProgram
 
 from PIL import ImageTk, Image
-
+from skimage.segmentation import slic
+from skimage.util import img_as_float
+from skimage import io
 
 def set_final_screen(app, instruction_type, pixel_type):
     app.clear_window()
@@ -19,7 +20,7 @@ def set_final_screen(app, instruction_type, pixel_type):
     # set back button
     app.set_back_button(command=lambda: app.set_second_window(), enabled=True)
 
-def set_final_screen_pixel_export(app: OneLineProgram):
+def set_final_screen_pixel_export(app):
     app.window.title("Confirm Export")
     sidelength = app.nPixels
 
@@ -108,14 +109,21 @@ def set_final_screen_pixel_export(app: OneLineProgram):
     tk.Button(app.window, text="Undo", command=reset_last_pixel).place(x=0.5 * app.size[0], y=0.9 * app.size[1])
 
 def set_final_screen_superpixel_export(app):
-
-
-
-
-
+    filename = "cute_qna_vasko_square.jpg"
+    image = img_as_float(io.imread(filename))
+    segments = slic(image, n_segments=10000, start_label=1)
+    io.imshow(image)
+    # io.imshow(segments)
+    print(segments)
+    print(type(segments))
+    io.show()
 
 def set_final_screen_pixel_SBS(app):
     pass
 
 def set_final_screen_superpixel_SBS(app):
     pass
+
+
+if __name__ == "__main__":
+    set_final_screen_superpixel_export(1)
