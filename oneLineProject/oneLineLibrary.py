@@ -2,6 +2,8 @@ import math
 from PIL import Image, ImageDraw
 
 
+
+
 def make_picture_circular(image):
     w, h = image.size
     output = Image.new("LA", (w, h), 0)
@@ -100,6 +102,8 @@ def make_square_spiral(turns, image_size, start_point, end_point):
 def get_turns(color, pixel_sidelength):
     MAX_TURNS = 30
     return MAX_TURNS*(255-color)/255
+
+
 
 if __name__ == "__main__":
     n_pixels = 100

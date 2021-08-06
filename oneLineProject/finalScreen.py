@@ -20,6 +20,8 @@ def set_final_screen(app, instruction_type, pixel_type):
     # set back button
     app.set_back_button(command=lambda: app.set_second_window(), enabled=True)
 
+
+
 def set_final_screen_pixel_export(app):
     app.window.title("Confirm Export")
     sidelength = app.nPixels
@@ -111,7 +113,8 @@ def set_final_screen_pixel_export(app):
 def set_final_screen_superpixel_export(app):
     filename = "cute_qna_vasko_square.jpg"
     image = img_as_float(io.imread(filename))
-    segments = slic(image, n_segments=10000, start_label=1)
+
+    segments = slic(image, n_segments=, start_label=1)
     io.imshow(image)
     # io.imshow(segments)
     print(segments)
