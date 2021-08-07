@@ -1,7 +1,10 @@
+import math
 import random
+import numpy as np
 
 from PIL import Image, ImageDraw
-import numpy as np
+from oneLineLibrary import atan3, f
+from main import OneLineProgram
 
 
 def get_hexagon_centers(w, h, hexagon_height):
@@ -50,7 +53,61 @@ def get_hexagon_matrix(hexagon_height):
 
     return output
 
-if __name__ == "__main__":
+def stretch_distance_hexagon(angle, hexagon_height):
+    while angle > math.pi/3:
+        angle -= math.pi/3
+
+    # now angle is between 0 and 60 degrees
+    circle_angle = 8/180*math.pi
+    if angle < circle_angle or angle > math.pi/3 - circle_angle:
+        return hexagon_height/(2*math.cos(math.pi/6 - circle_angle))
+    return hexagon_height/(2*math.cos(math.pi/6 - angle))
+
+def make_hexagon_spiral(turns, image_size, start_point, end_point):
+    R = min(image_size[0], image_size[1])/2
+    result = Image.new("LA", image_size, 255)
+    N = 5000
+    linewidth = max(1, int(image_size[0]/150))
+    angle_start = atan3(image_size[1]/2 - start_point[1], start_point[0] - image_size[0]/2)
+    angle_end = atan3(image_size[1]/2 - end_point[1], end_point[0] - image_size[0]/2)
+
+    if angle_end < angle_start:
+        angle_end, angle_start = angle_start, angle_end
+        start_point, end_point = end_point, start_point
+    alpha1 = -angle_start
+    alpha2 = -angle_end + math.pi
+    draw = ImageDraw.Draw(result, "LA")
+    last_x_start, last_y_start = 0, 0
+    last_x_end, last_y_end = 0, 0
+    dN = (alpha2 - alpha1)/2
+    for i in range(N, 0, -1):
+        t = i/N
+        theta_start = (turns - dN)*(1 - f(t)*t) - alpha1
+        theta_end = (turns + dN)*(1 - f(t)*t) - alpha2
+        r_start = t*stretch_distance_hexagon(theta_start, 2*R)
+        r_end = t*stretch_distance_hexagon(theta_end, 2*R)
+
+        center_start = (image_size[0]/2 + r_start*math.cos(theta_start), image_size[1]/2 - r_start*math.sin(theta_start))
+        center_end = (image_size[0]/2 - r_end*math.cos(theta_end), image_size[1]/2 + r_end*math.sin(theta_end))
+        if last_x_start != 0 and last_y_start != 0:
+            draw.line((center_start[0], center_start[1], last_x_start, last_y_start), fill="black", width=linewidth)
+            draw.line((center_end[0], center_end[1], last_x_end, last_y_end), fill="black", width=linewidth)
+        last_x_start, last_y_start = center_start
+        last_x_end, last_y_end = center_end
+
+    data = result.getdata()
+    new_data = []
+    for d in data:
+        if d[0] == 255 and d[1] == 255 and d[2] == 255:
+            new_data.append((255, 255, 255, 0))
+        else:
+            new_data.append(d)
+
+    result.putdata(new_data)
+
+    return result
+
+def make_hexagon_tiling():
     w, h = 500, 500
     hexagon_height = 50
     hexagon_width = int(hexagon_height*2/3**0.5)
@@ -74,6 +131,31 @@ if __name__ == "__main__":
 
     image.show()
 
+def hexagon_matrix_full_image(app: OneLineProgram):
+    hexagon_height = 50
+    w = int(0.9*app.nPixels*hexagon_height)
+    h = w
+    centers = get_hexagon_centers(w, h, hexagon_height)
+    output_matrix = np.empty((w, h))
+    output_matrix.fill(-1)
+    hexagon_matrix = get_hexagon_matrix(hexagon_height)
+    hex_matrix_w, hex_matrix_h = hexagon_matrix.shape
+    for center_index, center in enumerate(centers):
+        for x in range(hex_matrix_w):
+            for y in range(hex_matrix_h):
+                output_x = x - hex_matrix_w//2 + center[0]
+                output_y = y - hex_matrix_h//2 + center[1]
+                if 0 <= output_x < w and 0 <= output_y < h:
+                    output_matrix[output_x][output_y] = center_index
+
+    return output_matrix
+
+
+
+if __name__ == "__main__":
+    w, h = 500, 500
+    output = make_hexagon_spiral(20, (w, h), (0, h/2), (w, h/2))
+    output.show()
 
 
 

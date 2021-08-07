@@ -9,7 +9,7 @@ def set_second_window(app):
     pixel_type_label.place(x=int(0.3 * app.size[0]), y=int(0.1 * app.size[1]))
 
     # create pixel type dropdown menu
-    pixel_options = ["Pixel", "Superpixel"]
+    pixel_options = ["Pixel", "Hexagon"]
 
     pixel_type = tk.StringVar(app.window)
     pixel_type.set(pixel_options[0])

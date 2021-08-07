@@ -11,8 +11,7 @@ class OneLineProgram:
         self.window.geometry(f"{self.size[0]}x{self.size[1]}")
         self.filename = None
         self.allowed_images_types = ["jpg", "jpeg", "png"]
-        self.pixel_list = [] # list of lists of pixel orders, in a loop
-        # len(pixel_list) should be small
+        self.pixel_list = []
         self.nPixels = 100
         self.set_start_screen()
 
@@ -50,8 +49,8 @@ class OneLineProgram:
     def set_final_screen_pixel_export(self):
         finalScreen.set_final_screen_pixel_export(self)
 
-    def set_final_screen_superpixel_export(self):
-        finalScreen.set_final_screen_superpixel_export(self)
+    def set_final_screen_hexagon_export(self):
+        finalScreen.set_final_screen_hexagon_export(self)
 
     def set_final_screen_pixel_SBS(self):
         finalScreen.set_final_screen_pixel_SBS(self)
