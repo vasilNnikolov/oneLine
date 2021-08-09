@@ -23,6 +23,11 @@ def get_hexagon_centers(w, h, hexagon_height):
 
     return centers
 
+def is_center_close_to_border(w, h, center, hexagon_height):
+    if center[0] < hexagon_height or center[0] > h - hexagon_height or center[1] < 1.4*hexagon_height or center[1] > w - 1.4*hexagon_height:
+        return True
+    return False
+
 def get_hexagon_matrix(hexagon_height):
     """
     :param hexagon_height:
@@ -65,7 +70,7 @@ def stretch_distance_hexagon(angle, hexagon_height):
 
 def make_hexagon_spiral(turns, image_size, start_point, end_point):
     R = min(image_size[0], image_size[1])/2
-    result = Image.new("LA", image_size, 255)
+    result = Image.new("LA", image_size, 1)
     N = 5000
     linewidth = max(1, int(image_size[0]/150))
     angle_start = atan3(image_size[1]/2 - start_point[1], start_point[0] - image_size[0]/2)
@@ -98,14 +103,34 @@ def make_hexagon_spiral(turns, image_size, start_point, end_point):
     data = result.getdata()
     new_data = []
     for d in data:
-        if d[0] == 255 and d[1] == 255 and d[2] == 255:
-            new_data.append((255, 255, 255, 0))
+        if d[0] == 1:
+            new_data.append((1, 0))
         else:
             new_data.append(d)
 
     result.putdata(new_data)
 
     return result
+
+def pick_random_start_end(image_size):
+    side_options = ["left", "right", "up", "down"]
+    random.shuffle(side_options)
+    sides = side_options[:2]
+    ends = [[0, 0], [0, 0]]
+    for side_index, s in enumerate(sides):
+        if s == "left":
+            ends[side_index] = (0, random.randint(0, image_size[1]))
+        elif s == "right":
+            ends[side_index] = (image_size[0] - 1, random.randint(0, image_size[1]))
+        elif s == "up":
+            ends[side_index] = (random.randint(0, image_size[0] - 1), 0)
+        elif s == "down":
+            ends[side_index] = (random.randint(0, image_size[0] - 1), image_size[1] - 1)
+
+    return ends
+
+
+
 
 def make_hexagon_tiling():
     w, h = 500, 500
@@ -153,9 +178,6 @@ def hexagon_matrix_full_image(app: OneLineProgram):
 
 
 if __name__ == "__main__":
-    w, h = 500, 500
-    output = make_hexagon_spiral(20, (w, h), (0, h/2), (w, h/2))
-    output.show()
-
+    print(pick_random_start_end((100, 100)))
 
 
