@@ -129,9 +129,6 @@ def pick_random_start_end(image_size):
 
     return ends
 
-
-
-
 def make_hexagon_tiling():
     w, h = 500, 500
     hexagon_height = 50
@@ -156,10 +153,8 @@ def make_hexagon_tiling():
 
     image.show()
 
-def hexagon_matrix_full_image(app: OneLineProgram):
+def hexagon_matrix_full_image(w, h):
     hexagon_height = 50
-    w = int(0.9*app.nPixels*hexagon_height)
-    h = w
     centers = get_hexagon_centers(w, h, hexagon_height)
     output_matrix = np.empty((w, h))
     output_matrix.fill(-1)
@@ -174,7 +169,6 @@ def hexagon_matrix_full_image(app: OneLineProgram):
                     output_matrix[output_x][output_y] = center_index
 
     return output_matrix
-
 
 
 if __name__ == "__main__":
