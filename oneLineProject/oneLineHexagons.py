@@ -163,9 +163,9 @@ def hexagon_matrix_full_image(w, h):
     for center_index, center in enumerate(centers):
         for x in range(hex_matrix_w):
             for y in range(hex_matrix_h):
-                output_x = x - hex_matrix_w//2 + center[0]
-                output_y = y - hex_matrix_h//2 + center[1]
-                if 0 <= output_x < w and 0 <= output_y < h:
+                output_x = int(x - hex_matrix_w//2 + center[0])
+                output_y = int(y - hex_matrix_h//2 + center[1])
+                if 0 <= output_x < w and 0 <= output_y < h and hexagon_matrix[x][y] == 1:
                     output_matrix[output_x][output_y] = center_index
 
     return output_matrix

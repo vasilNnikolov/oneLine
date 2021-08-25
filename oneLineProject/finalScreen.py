@@ -112,8 +112,6 @@ def set_final_screen_pixel_export(app):
     tk.Button(app.window, text="Undo", command=reset_last_pixel).place(x=0.5 * app.size[0], y=0.9 * app.size[1])
 
 def set_final_screen_hexagon_export(app: OneLineProgram):
-    sidelength = app.nPixels
-
     image = Image.open(app.filename)
     canvas_size = (int(0.7 * app.size[1]), int(0.7 * app.size[1]))
     pixel_sidelength = canvas_size[0] / app.nPixels
@@ -127,22 +125,9 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
     hexagon_centers = olh.get_hexagon_centers(canvas_size[0], canvas_size[1], hexagon_height)
     full_image_matrix = olh.hexagon_matrix_full_image(canvas_size[0], canvas_size[1])
     random_colors = [(randint(0, 255), 0) for c in hexagon_centers]
-
-    # hexagon_matrix = olh.get_hexagon_matrix(hexagon_height)
-    # matrix_w, matrix_h = hexagon_matrix.shape
-    # d = ImageDraw.Draw(output)
-    #
-    # for center in hexagon_centers:
-    #     r = 1
-    #     d.ellipse((center[0] - r, center[1] - r, center[0] + r, center[1] + r), fill="red")
-    #     # draw hexagon with this center
-    #     hexagon_color = randint(0, 255)
-    #     for x in range(matrix_w):
-    #         for y in range(matrix_h):
-    #             if hexagon_matrix[x][y] == 1 and 0 <= x + center[0] - matrix_w/2 < canvas_size[0] and 0 <= y + center[1] - matrix_h/2 < canvas_size[1]:
-    #                 output_pixels[int(x + center[0] - matrix_w/2), int(y + center[1] - matrix_h/2)] = (hexagon_color, 255)
-
-
+    for x in range(full_image_matrix.shape[0]):
+        for y in range(full_image_matrix.shape[1]):
+            output_pixels[x, y] = random_colors[int(full_image_matrix[x][y])]
 
     image_canvas = tk.Canvas(app.window, width=canvas_size[0], height=canvas_size[1], bg="cyan")
     image_canvas.place(x=int(0.2 * app.size[0]), y=50)
@@ -156,26 +141,38 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
     def set_pixel_list(event):
         x, y = event.x, event.y
         # pixel_coordinates = (int(x / pixel_sidelength), int(y / pixel_sidelength))
-        # get the index of the pixel
-        if pixel_coordinates not in app.pixel_list:
-            # check if pixel borders the last pixel on the list
+        # get the index of the hexagon
+        hexagon_index = full_image_matrix[x][y]
+        if hexagon_index not in app.pixel_list:
             is_bordering_last_pixel = True
             fill = "green"
             if len(app.pixel_list) == 0:
                 # draw the starting pixel red
                 fill = "red"
             else:
-                horizontal_distance = abs(pixel_coordinates[0] - app.pixel_list[-1][0])
-                vertical_distance = abs(pixel_coordinates[1] - app.pixel_list[-1][1])
-                is_bordering_last_pixel = (horizontal_distance == 1 and vertical_distance == 0)
-                is_bordering_last_pixel |= (horizontal_distance == 0 and vertical_distance == 1)
+                # horizontal_distance = abs(pixel_coordinates[0] - app.pixel_list[-1][0])
+                # vertical_distance = abs(pixel_coordinates[1] - app.pixel_list[-1][1])
+                # is_bordering_last_pixel = (horizontal_distance == 1 and vertical_distance == 0)
+                # is_bordering_last_pixel |= (horizontal_distance == 0 and vertical_distance == 1)
+
+                # find out if this hexagon is bordering the last hexagon
+                # distance between their centers should be about 1 hexagon height
+                current_center, last_center = hexagon_centers[hexagon_index], hexagon_centers[app.pixel_list[-1]]
+                distance_between_centers_squared = ((current_center[0] - last_center[0])**2 + (current_center[1] - last_center[1])**2)
+                if not 0.9*hexagon_height**2 < distance_between_centers_squared < 1.1*hexagon_height**2:
+                    is_bordering_last_pixel = False
+
             if is_bordering_last_pixel:
-                # set the last pixel to green
-                image_canvas.create_rectangle((pixel_coordinates[0] * pixel_sidelength,
-                                               pixel_coordinates[1] * pixel_sidelength,
-                                               (pixel_coordinates[0] + 1) * pixel_sidelength,
-                                               (pixel_coordinates[1] + 1) * pixel_sidelength),
-                                              fill=fill, outline="")
+                # # set the last pixel to green
+                # image_canvas.create_rectangle((pixel_coordinates[0] * pixel_sidelength,
+                #                                pixel_coordinates[1] * pixel_sidelength,
+                #                                (pixel_coordinates[0] + 1) * pixel_sidelength,
+                #                                (pixel_coordinates[1] + 1) * pixel_sidelength),
+                #                               fill=fill, outline="")
+
+                # draw hexagon with appropriate fill
+                # add a dot in the center of the hexagon, connect it with the last dot
+
                 app.pixel_list.append(pixel_coordinates)
 
                 # set the path to yellow
@@ -228,6 +225,3 @@ def set_final_screen_pixel_SBS(app):
 def set_final_screen_superpixel_SBS(app):
     pass
 
-
-if __name__ == "__main__":
-    set_final_screen_superpixel_export(1)
