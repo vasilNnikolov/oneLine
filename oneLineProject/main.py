@@ -7,7 +7,8 @@ import appNativeFunctions
 class OneLineProgram:
     def __init__(self):
         self.window = tk.Tk()
-        self.size = (1500, 1000)
+        self.size = (2000, 1000)
+        # self.size = (1500, 1000)
         self.window.geometry(f"{self.size[0]}x{self.size[1]}")
         self.filename = None
         self.allowed_images_types = ["jpg", "jpeg", "png"]

@@ -153,8 +153,7 @@ def make_hexagon_tiling():
 
     image.show()
 
-def hexagon_matrix_full_image(w, h):
-    hexagon_height = 50
+def hexagon_matrix_full_image(w, h, hexagon_height):
     centers = get_hexagon_centers(w, h, hexagon_height)
     output_matrix = np.empty((w, h))
     output_matrix.fill(-1)
