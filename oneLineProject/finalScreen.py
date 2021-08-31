@@ -1,5 +1,4 @@
 import tkinter as tk
-import os
 
 import numpy as np
 
@@ -172,8 +171,8 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
                 last_hexagon_x, last_hexagon_y = int(last_hexagon_x), int(last_hexagon_y)
                 connecting_line = image_canvas.create_line(center_x, center_y, last_hexagon_x, last_hexagon_y, width=2, fill="red")
                 lines.append(connecting_line)
-                print(len(app.pixel_list))
                 app.pixel_list.append(hexagon_index)
+                print(app.pixel_list)
 
     image_canvas.bind("<B1-Motion>", set_pixel_list)
 
@@ -196,9 +195,17 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
         command = input("are you sure you want to finish drawing the path?: y/n")
         if command.lower() == "y":
             # make output image
-            output_image =
+            make_final_hexagon_image(app, canvas_size, hexagon_height)
+    tk.Button(app.window, text="Finish", command=finish_drawing_path).place(x=0.8*app.size[0], y=0.9*app.size[1])
 
 def make_final_hexagon_image(app: OneLineProgram, canvas_size, hexagon_height):
+    """
+    make the final target image once the path of hexagons has been selected
+    :param app:
+    :param canvas_size: (w, h) of image combo
+    :param hexagon_height:
+    :return:
+    """
     w, h = canvas_size
 
     output_image = Image.new("L", (w, h), 255)
@@ -209,14 +216,16 @@ def make_final_hexagon_image(app: OneLineProgram, canvas_size, hexagon_height):
     original_pixels = original_image.load()
 
     hexagon_area = np.count_nonzero(hexagon_matrix == 1)
+    print(app.pixel_list)
 
     for hexagon_order, center_index in enumerate(app.pixel_list):
         # computes only for the circle inside the image
-        c = hexagon_centers[center_index]
-        if (c[0] - w // 2) ** 2 + (c[1] - h // 2) ** 2 > w ** 2 / 4:
-            continue
+        # c = hexagon_centers[center_index]
+        # if (c[0] - w // 2) ** 2 + (c[1] - h // 2) ** 2 > w ** 2 / 4:
+        #     continue
 
         # get intensity of the region in the matrix
+        c = hexagon_centers[center_index]
         is_close_to_border = olh.is_center_close_to_border(w, h, c, hexagon_height)
         total_intensity = 0
         partial_hexagon_area = 0
@@ -239,42 +248,32 @@ def make_final_hexagon_image(app: OneLineProgram, canvas_size, hexagon_height):
         # set the color of the hexagon to total_intensity
         turns = (255 - total_intensity) / 255 * 15
 
-        # pick start and end points randomly
-
         start_point, end_point = (0, 0), (0, 0)
-        if hexagon_order == 0:
-            first_hexagon_center = hexagon_centers[app.pixel_list[0]]
-            last_hexagon_center = hexagon_centers[app.pixel_list[-1]]
 
-            start_point = ((first_hexagon_center[0] + last_hexagon_center[0])/2, (first_hexagon_center[1] + last_hexagon_center[1])/2)
-        else:
-            current_hexagon_center = hexagon_centers[center_index]
-            last_hexagon_center = hexagon_centers[app.pixel_list[hexagon_order - 1]]
+        if not (hexagon_order == 0 or hexagon_order == len(app.pixel_list) - 1):
+            current_center = hexagon_centers[center_index]
+            next_center = hexagon_centers[app.pixel_list[hexagon_order + 1]]
+            previous_center = hexagon_centers[app.pixel_list[hexagon_order - 1]]
 
-            start_point = ((current_hexagon_center[0] + last_hexagon_center[0])/2, (current_hexagon_center[1] + last_hexagon_center[1])/2)
+            start_point = ((previous_center[0] - current_center[0])/2 + int(0.7*hexagon_height),
+                           (previous_center[1] - current_center[1])/2 + int(0.5*hexagon_height))
 
-        if hexagon_order == len(app.pixel_list) - 1:
-            first_hexagon_center = hexagon_centers[app.pixel_list[0]]
-            last_hexagon_center = hexagon_centers[app.pixel_list[-1]]
+            end_point = ((next_center[0] - current_center[0])/2 + int(0.7*hexagon_height),
+                         (next_center[1] - current_center[1])/2 + int(0.5*hexagon_height))
 
-            end_point = ((first_hexagon_center[0] + last_hexagon_center[0])/2, (first_hexagon_center[1] + last_hexagon_center[1])/2)
-        else:
-            current_hexagon_center = hexagon_centers[center_index]
-            next_hexagon_center = hexagon_centers[app.pixel_list[hexagon_order + 1]]
-
-            end_point = ((current_hexagon_center[0] + next_hexagon_center[0])/2, (current_hexagon_center[1] + next_hexagon_center[1])/2)
-
-        image_to_paste = olh.make_hexagon_spiral(turns, (int(1.4 * hexagon_height), hexagon_height),
-                                                             start_point, end_point)
+        image_to_paste = olh.make_hexagon_spiral(turns,
+                                                 (int(1.4 * hexagon_height), hexagon_height),
+                                                 start_point,
+                                                 end_point)
         output_image.paste(image_to_paste, (int(c[0] - 0.7 * hexagon_height), int(c[1] - hexagon_height // 2)),
                            mask=image_to_paste.convert("RGBA"))
+        print(hexagon_order, start_point, end_point)
 
         if center_index % 50 == 0:
             print(center_index)
 
     output_image.show()
-    output_image.save("hexagon_output_random_start_end.jpg")
-
+    output_image.save("hexagon_output_given_start_end.jpg")
 
 def set_final_screen_pixel_SBS(app):
     pass

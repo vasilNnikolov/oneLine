@@ -4,7 +4,6 @@ import numpy as np
 
 from PIL import Image, ImageDraw
 from oneLineLibrary import atan3, f
-from main import OneLineProgram
 
 
 def get_hexagon_centers(w, h, hexagon_height):
