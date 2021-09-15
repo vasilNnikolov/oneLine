@@ -114,10 +114,12 @@ def set_final_screen_pixel_export(app):
 def set_final_screen_hexagon_export(app: OneLineProgram):
     image = Image.open(app.filename)
     canvas_size = (int(0.7 * app.size[1]), int(0.7 * app.size[1]))
-    pixel_sidelength = canvas_size[0] / app.nPixels
+    output_hexagon_height = 50
+    output_image_size = (int(output_hexagon_height*app.nPixels), int(output_hexagon_height*app.nPixels))
 
     image_to_show = image.resize(canvas_size)
-    output = one.make_picture_circular(image_to_show)
+    # output = one.make_picture_circular(image_to_show)
+    output = image_to_show.convert("LA")
     output_pixels = output.load()
 
     # draw hexagons on the image
@@ -129,6 +131,8 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
         for y in range(full_image_matrix.shape[1]):
             output_pixels[x, y] = random_colors[int(full_image_matrix[x][y])]
 
+    output = one.make_picture_circular(output)
+
     image_canvas = tk.Canvas(app.window, width=canvas_size[0], height=canvas_size[1], bg="cyan")
     image_canvas.place(x=int(0.2 * app.size[0]), y=50)
     img = ImageTk.PhotoImage(output)
@@ -136,8 +140,8 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
     image_canvas.image = img
 
 
-    center_dots = []
     lines = []
+    yellow_circles = []
     # draw on image
     # bind sth to <B1-Motion>
     def set_pixel_list(event):
@@ -160,11 +164,16 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
 
             if is_bordering_last_pixel:
                 # draw hexagon with appropriate fill
-                # add a dot in the center of the hexagon, connect it with the last dot
-                r = 1
-                center_x, center_y = hexagon_centers[hexagon_index][0], hexagon_centers[hexagon_index][1]
-                center_dot = image_canvas.create_oval(center_x - r, center_y - r, center_x + r, center_y + r, fill=fill)
-                center_dots.append(center_dot)
+                enter_x, center_y = hexagon_centers[hexagon_index][0], hexagon_centers[hexagon_index][1]
+
+                # draw yellow circle to show the hexagon has been selected
+                yellow_circle_radius = hexagon_height//2
+                yellow_circle = image_canvas.create_oval(center_x - yellow_circle_radius,
+                                                         center_y - yellow_circle_radius,
+                                                         center_x + yellow_circle_radius,
+                                                         center_y + yellow_circle_radius,
+                                                         fill="yellow")
+                yellow_circles.append(yellow_circle)
 
                 # draw line from current to last pixel
                 last_hexagon_x, last_hexagon_y = hexagon_centers[app.pixel_list[-1]]
@@ -172,7 +181,6 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
                 connecting_line = image_canvas.create_line(center_x, center_y, last_hexagon_x, last_hexagon_y, width=2, fill="red")
                 lines.append(connecting_line)
                 app.pixel_list.append(hexagon_index)
-                print(app.pixel_list)
 
     image_canvas.bind("<B1-Motion>", set_pixel_list)
 
@@ -185,8 +193,8 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
             # get the color of the pixel that is to be returned to the original image
             image_canvas.delete(lines[-1])
             lines.pop(-1)
-            image_canvas.delete(center_dots[-1])
-            center_dots.pop(-1)
+            image_canvas.delete(yellow_circles[-1])
+            yellow_circles.pop(-1)
 
     tk.Button(app.window, text="Undo", command=reset_last_pixel).place(x=0.5 * app.size[0], y=0.9 * app.size[1])
 
@@ -195,7 +203,12 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
         command = input("are you sure you want to finish drawing the path?: y/n")
         if command.lower() == "y":
             # make output image
-            make_final_hexagon_image(app, canvas_size, hexagon_height)
+
+            final_image = make_final_hexagon_image(app, output_image_size, output_hexagon_height)
+            final_image.show()
+
+            # make text file with centers of hexagons in order
+            # TODO
     tk.Button(app.window, text="Finish", command=finish_drawing_path).place(x=0.8*app.size[0], y=0.9*app.size[1])
 
 def make_final_hexagon_image(app: OneLineProgram, canvas_size, hexagon_height):
@@ -204,9 +217,10 @@ def make_final_hexagon_image(app: OneLineProgram, canvas_size, hexagon_height):
     :param app:
     :param canvas_size: (w, h) of image combo
     :param hexagon_height:
-    :return:
+    :return: the final image
     """
     w, h = canvas_size
+    print(w, h)
 
     output_image = Image.new("L", (w, h), 255)
 
@@ -216,7 +230,6 @@ def make_final_hexagon_image(app: OneLineProgram, canvas_size, hexagon_height):
     original_pixels = original_image.load()
 
     hexagon_area = np.count_nonzero(hexagon_matrix == 1)
-    print(app.pixel_list)
 
     for hexagon_order, center_index in enumerate(app.pixel_list):
         # computes only for the circle inside the image
@@ -267,13 +280,11 @@ def make_final_hexagon_image(app: OneLineProgram, canvas_size, hexagon_height):
                                                  end_point)
         output_image.paste(image_to_paste, (int(c[0] - 0.7 * hexagon_height), int(c[1] - hexagon_height // 2)),
                            mask=image_to_paste.convert("RGBA"))
-        print(hexagon_order, start_point, end_point)
 
         if center_index % 50 == 0:
             print(center_index)
 
-    output_image.show()
-    output_image.save("hexagon_output_given_start_end.jpg")
+    return output_image
 
 def set_final_screen_pixel_SBS(app):
     pass
