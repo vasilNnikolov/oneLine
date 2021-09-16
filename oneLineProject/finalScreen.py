@@ -1,3 +1,4 @@
+import random
 import tkinter as tk
 
 import numpy as np
@@ -7,7 +8,7 @@ import oneLineHexagons as olh
 from main import OneLineProgram
 
 from PIL import ImageTk, Image
-from random import randint
+from random import randint, shuffle
 
 def set_final_screen(app, instruction_type, pixel_type):
     app.clear_window()
@@ -118,7 +119,6 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
     output_image_size = (int(output_hexagon_height*app.nPixels), int(output_hexagon_height*app.nPixels))
 
     image_to_show = image.resize(canvas_size)
-    # output = one.make_picture_circular(image_to_show)
     output = image_to_show.convert("LA")
     output_pixels = output.load()
 
@@ -139,11 +139,11 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
     image_canvas.create_image(int(canvas_size[0] / 2), int(canvas_size[1] / 2), image=img)
     image_canvas.image = img
 
-
     lines = []
     yellow_circles = []
     # draw on image
     # bind sth to <B1-Motion>
+
     def set_pixel_list(event):
         x, y = event.x, event.y
 
@@ -164,7 +164,7 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
 
             if is_bordering_last_pixel:
                 # draw hexagon with appropriate fill
-                enter_x, center_y = hexagon_centers[hexagon_index][0], hexagon_centers[hexagon_index][1]
+                center_x, center_y = hexagon_centers[hexagon_index][0], hexagon_centers[hexagon_index][1]
 
                 # draw yellow circle to show the hexagon has been selected
                 yellow_circle_radius = hexagon_height//2
@@ -206,9 +206,17 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
 
             final_image = make_final_hexagon_image(app, output_image_size, output_hexagon_height)
             final_image.show()
+            final_image.save("hexagon__output_final.jpg")
 
-            # make text file with centers of hexagons in order
-            # TODO
+            # TODO make text file with centers of hexagons in random order
+            output_hexagon_centers = olh.get_hexagon_centers(output_image_size[0], output_image_size[1], output_hexagon_height)
+
+            shuffled_pixels = [output_hexagon_centers[i] for i in app.pixel_list]
+            random.shuffle(shuffled_pixels)
+            with open("centers_order.txt", "w") as f:
+                f.writelines([f"{pixel_coordinates}\n" for pixel_coordinates in shuffled_pixels])
+
+
     tk.Button(app.window, text="Finish", command=finish_drawing_path).place(x=0.8*app.size[0], y=0.9*app.size[1])
 
 def make_final_hexagon_image(app: OneLineProgram, canvas_size, hexagon_height):
