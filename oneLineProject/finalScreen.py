@@ -216,7 +216,6 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
             with open("centers_order.txt", "w") as f:
                 f.writelines([f"{pixel_coordinates}\n" for pixel_coordinates in shuffled_pixels])
 
-
     tk.Button(app.window, text="Finish", command=finish_drawing_path).place(x=0.8*app.size[0], y=0.9*app.size[1])
 
 def make_final_hexagon_image(app: OneLineProgram, canvas_size, hexagon_height):
@@ -238,13 +237,15 @@ def make_final_hexagon_image(app: OneLineProgram, canvas_size, hexagon_height):
     original_pixels = original_image.load()
 
     hexagon_area = np.count_nonzero(hexagon_matrix == 1)
+    curve_start = hexagon_centers[app.pixel_list[0]]
+    curve_end = hexagon_centers[app.pixel_list[-1]]
+
+    # if start borders end, append start to the end of pixel list, and end to the start
+    if 0.9 * hexagon_height ** 2 < (curve_start[0] - curve_end[0]) ** 2 + (curve_start[1] - curve_end[1]) ** 2 < 1.1 * hexagon_height ** 2:
+        app.pixel_list.insert(0, app.pixel_list[-1])
+        app.pixel_list.append(app.pixel_list[1])
 
     for hexagon_order, center_index in enumerate(app.pixel_list):
-        # computes only for the circle inside the image
-        # c = hexagon_centers[center_index]
-        # if (c[0] - w // 2) ** 2 + (c[1] - h // 2) ** 2 > w ** 2 / 4:
-        #     continue
-
         # get intensity of the region in the matrix
         c = hexagon_centers[center_index]
         is_close_to_border = olh.is_center_close_to_border(w, h, c, hexagon_height)
@@ -270,9 +271,9 @@ def make_final_hexagon_image(app: OneLineProgram, canvas_size, hexagon_height):
         turns = (255 - total_intensity) / 255 * 15
 
         start_point, end_point = (0, 0), (0, 0)
+        current_center = hexagon_centers[center_index]
 
-        if not (hexagon_order == 0 or hexagon_order == len(app.pixel_list) - 1):
-            current_center = hexagon_centers[center_index]
+        if 0 < hexagon_order < len(app.pixel_list) - 1:
             next_center = hexagon_centers[app.pixel_list[hexagon_order + 1]]
             previous_center = hexagon_centers[app.pixel_list[hexagon_order - 1]]
 
@@ -285,12 +286,11 @@ def make_final_hexagon_image(app: OneLineProgram, canvas_size, hexagon_height):
         image_to_paste = olh.make_hexagon_spiral(turns,
                                                  (int(1.4 * hexagon_height), hexagon_height),
                                                  start_point,
-                                                 end_point)
+                                                 end_point, add_end_points=True)
         output_image.paste(image_to_paste, (int(c[0] - 0.7 * hexagon_height), int(c[1] - hexagon_height // 2)),
                            mask=image_to_paste.convert("RGBA"))
 
-        if center_index % 50 == 0:
-            print(center_index)
+
 
     return output_image
 

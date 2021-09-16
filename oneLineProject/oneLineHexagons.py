@@ -67,7 +67,7 @@ def stretch_distance_hexagon(angle, hexagon_height):
         return hexagon_height/(2*math.cos(math.pi/6 - circle_angle))
     return hexagon_height/(2*math.cos(math.pi/6 - angle))
 
-def make_hexagon_spiral(turns, image_size, start_point, end_point):
+def make_hexagon_spiral(turns, image_size, start_point, end_point, add_end_points=False):
     R = min(image_size[0], image_size[1])/2
     result = Image.new("LA", image_size, 1)
     N = 5000
@@ -109,6 +109,18 @@ def make_hexagon_spiral(turns, image_size, start_point, end_point):
 
     result.putdata(new_data)
 
+    if add_end_points:
+        d = ImageDraw.Draw(result)
+        r = 1
+        d.ellipse([start_point[0] - r,
+                  start_point[1] - r,
+                  start_point[0] + r,
+                  start_point[1] + r], fill=(0, 255))
+
+        d.ellipse([end_point[0] - r,
+                  end_point[1] - r,
+                  end_point[0] + r,
+                  end_point[1] + r], fill=(0, 255))
     return result
 
 def pick_random_start_end(image_size):
