@@ -1,4 +1,4 @@
-impor![](cute_image_3_random_SE.jpg)t finalScreen
+import finalScreen
 
 if __name__ == "__main__":
     nPixels = 100
