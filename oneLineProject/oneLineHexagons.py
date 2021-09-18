@@ -6,6 +6,7 @@ from PIL import Image, ImageDraw
 from oneLineLibrary import atan3, f
 
 
+
 def get_hexagon_centers(w, h, hexagon_height):
     # first hexagon center is at (0, 0)
     centers = []
@@ -180,8 +181,5 @@ def hexagon_matrix_full_image(w, h, hexagon_height):
 
     return output_matrix
 
-
-if __name__ == "__main__":
-    print(pick_random_start_end((100, 100)))
 
 
