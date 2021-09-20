@@ -5,6 +5,7 @@ import numpy as np
 
 import oneLineLibrary as one
 import oneLineHexagons as olh
+import calibrate_spiral
 from main import OneLineProgram
 
 from PIL import ImageTk, Image
@@ -118,7 +119,7 @@ def are_centers_neighbouring(center_1, center_2, hex_height):
 def set_final_screen_hexagon_export(app: OneLineProgram):
     image = Image.open(app.filename)
     canvas_size = (int(0.7 * app.size[1]), int(0.7 * app.size[1]))
-    output_hexagon_height = 30
+    output_hexagon_height = 35
     output_image_size = (int(output_hexagon_height*app.nPixels), int(output_hexagon_height*app.nPixels))
 
     image_to_show = image.resize(canvas_size)
@@ -129,10 +130,14 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
     hexagon_height = int(canvas_size[1]/app.nPixels)
     hexagon_centers = olh.get_hexagon_centers(canvas_size[0], canvas_size[1], hexagon_height)
     full_image_matrix = olh.hexagon_matrix_full_image(canvas_size[0], canvas_size[1], hexagon_height)
-    random_colors = [(randint(0, 255), 0) for c in hexagon_centers]
+    image_colors = []
+    for c in hexagon_centers:
+        clamped_center = (max(0, min(c[0], canvas_size[0] - 1)),
+                          max(0, min(c[1], canvas_size[1] - 1)))
+        image_colors.append(output_pixels[clamped_center])
     for x in range(full_image_matrix.shape[0]):
         for y in range(full_image_matrix.shape[1]):
-            output_pixels[x, y] = random_colors[int(full_image_matrix[x][y])]
+            output_pixels[x, y] = image_colors[int(full_image_matrix[x][y])]
 
     output = one.make_picture_circular(output)
 
@@ -155,11 +160,11 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
             hexagon_index = int(full_image_matrix[x][y])
             if hexagon_index not in app.pixel_list:
                 is_bordering_last_pixel = True
-                fill = "green"
+                fill = "yellow"
                 if len(app.pixel_list) == 0:
                     # draw the starting pixel red
                     fill = "red"
-                    app.pixel_list.append(hexagon_index)
+                    # app.pixel_list.append(hexagon_index)
                 else:
                     current_center, last_center = hexagon_centers[hexagon_index], hexagon_centers[app.pixel_list[-1]]
                     if not are_centers_neighbouring(current_center, last_center, hexagon_height):
@@ -175,14 +180,16 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
                                                              center_y - yellow_circle_radius,
                                                              center_x + yellow_circle_radius,
                                                              center_y + yellow_circle_radius,
-                                                             fill="yellow")
+                                                             fill=fill)
                     yellow_circles.append(yellow_circle)
 
-                    # draw line from current to last pixel
-                    last_hexagon_x, last_hexagon_y = hexagon_centers[app.pixel_list[-1]]
-                    last_hexagon_x, last_hexagon_y = int(last_hexagon_x), int(last_hexagon_y)
-                    connecting_line = image_canvas.create_line(center_x, center_y, last_hexagon_x, last_hexagon_y, width=2, fill="red")
-                    lines.append(connecting_line)
+                    if len(app.pixel_list) > 0:
+                        # draw line from current to last pixel
+                        last_hexagon_x, last_hexagon_y = hexagon_centers[app.pixel_list[-1]]
+                        last_hexagon_x, last_hexagon_y = int(last_hexagon_x), int(last_hexagon_y)
+                        connecting_line = image_canvas.create_line(center_x, center_y, last_hexagon_x, last_hexagon_y, width=2, fill="red")
+                        lines.append(connecting_line)
+
                     app.pixel_list.append(hexagon_index)
 
     image_canvas.bind("<B1-Motion>", set_pixel_list)
@@ -207,7 +214,7 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
     def finish_drawing_path():
         command = input("are you sure you want to finish drawing the path?: y/n")
         if command.lower() == "y":
-            app.pixel_list.pop(0)
+            # app.pixel_list.pop(0)
             filename_without_extension = app.filename.split(".")[0]
 
             # save hexagon order to txt file
@@ -383,6 +390,11 @@ def make_final_hexagon_image_2(app: OneLineProgram, canvas_size, hexagon_height)
     return output_image
 
 def make_final_hexagon_image_3(app: OneLineProgram, canvas_size, hexagon_height):
+    # get turns for each color
+    calibrate_spiral.make_calibration_file(hexagon_height)
+    with open("calibration_file.txt", "r") as calib_file:
+        turns_by_color = [float(line.split(": ")[1]) for line in calib_file.readlines()]
+
     w, h = canvas_size
     output_image = Image.new("L", (w, h), 255)
     hexagon_centers = olh.get_hexagon_centers(w, h, hexagon_height)
@@ -406,7 +418,9 @@ def make_final_hexagon_image_3(app: OneLineProgram, canvas_size, hexagon_height)
                              max(0, min(scaled_hex_center[1], original_h - 1)))
         color = original_image.getpixel(scaled_hex_center)
 
-        turns = (255 - color) / 255 * 15
+        # get turns from color
+        # turns = (255 - color) / 255 * 15
+        turns = turns_by_color[color]
 
         start_point, end_point = (0, 0), (hexagon_height, hexagon_height)
         current_center = hexagon_centers[center_index]
@@ -455,6 +469,11 @@ def make_final_hexagon_image_3(app: OneLineProgram, canvas_size, hexagon_height)
     return output_image
 
 def hexagon_image_random_start_end_2(filename, canvas_size, hexagon_height):
+    # get turns for each color
+    calibrate_spiral.make_calibration_file(hexagon_height)
+    with open("calibration_file.txt", "r") as calib_file:
+        turns_by_color = [float(line.split(": ")[1]) for line in calib_file.readlines()]
+
     w, h = canvas_size
     output_image = Image.new("L", (w, h), 255)
     hexagon_centers = olh.get_hexagon_centers(w, h, hexagon_height)
@@ -475,7 +494,7 @@ def hexagon_image_random_start_end_2(filename, canvas_size, hexagon_height):
         if 0 <= scaled_hex_center[0] < original_w and 0 <= scaled_hex_center[1] < original_h:
             color = original_image.getpixel(scaled_hex_center)
 
-            turns = (255 - color) / 255 * 15
+            turns = turns_by_color[color]
 
             start_point, end_point = (0, 0), (hexagon_height, hexagon_height)
 
