@@ -208,13 +208,16 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
                 image_canvas.delete(yellow_circles[-1])
                 yellow_circles.pop(-1)
 
-    tk.Button(app.window, text="Undo", command=reset_last_pixel).place(x=0.5 * app.size[0], y=0.9 * app.size[1])
+    undo_button = tk.Button(app.window, text="Undo", command=reset_last_pixel)
+    undo_button.place(x=0.5 * app.size[0], y=0.9 * app.size[1])
+    app.window.bind("u", lambda event: reset_last_pixel())
 
     # make finish button
     def finish_drawing_path():
         command = input("are you sure you want to finish drawing the path?: y/n")
         if command.lower() == "y":
             # app.pixel_list.pop(0)
+            app.window.unbind("u")
             filename_without_extension = app.filename.split(".")[0]
 
             # save hexagon order to txt file
