@@ -1,18 +1,105 @@
 import tkinter as tk
 from tkinter import messagebox
+from random import shuffle
+
+import ImageDraw
+import ImageFont
+import PIL.Image
 from PIL import Image, ImageTk
+from os import path
 
-# hexagon_centers_filename = input("Enter the hexagon centers filename: ")
-# final_image_filename = input("Enter the final image filename: ")
-hexagon_centers_filename = "centers_order.txt"
-final_image_filename = "hexagon__output_final.jpg"
 
-try:
-    final_image = Image.open(final_image_filename)
-    with open(hexagon_centers_filename, "r") as f:
-        centers = f.readlines()
+def on_hex_center_tutorial():
+    hexagon_centers_filename = "centers_order.txt"
+    final_image_filename = "cute_image_4_random_SE_3.jpg"
 
-    centers = [tuple(map(float, c[1:-2].split(", "))) for c in centers]
+    try:
+        final_image = Image.open(final_image_filename)
+        with open(hexagon_centers_filename, "r") as f:
+            centers = f.readlines()
+
+        centers = [tuple(map(float, c[1:-2].split(", "))) for c in centers]
+
+        root = tk.Tk()
+        root.geometry("1000x1000")
+
+        canvas = tk.Canvas(root, width=800, height=800)
+        canvas.place(x=100, y=100)
+
+        def on_next_center():
+            # generate image to be shown in image canvas
+            if len(centers) > 0:
+                current_center = centers.pop(0)
+                current_hexagon_image = final_image.crop((current_center[0] - 50,
+                                                          current_center[1] - 50,
+                                                          current_center[0] + 50,
+                                                          current_center[1] + 50)).resize((800, 800))
+
+                # add coordinate lines to the image
+
+
+                canvas_image = ImageTk.PhotoImage(current_hexagon_image)
+                canvas.create_image(0, 0, anchor=tk.NW, image=canvas_image)
+                canvas.image = canvas_image
+            else:
+                print("You have finished the drawing. Exiting")
+                root.destroy()
+
+
+        next_hexagon_button = tk.Button(root, text="Next hexagon", command=on_next_center)
+        next_hexagon_button.place(x=500, y=950)
+
+        def on_closing():
+            if messagebox.askokcancel("Quit", "Do you want to quit?"):
+                # edit the file by removing the hexagon centers which have been drawn
+                with open(hexagon_centers_filename, "w") as f:
+                    f.writelines([f"{c}\n" for c in centers])
+
+                root.destroy()
+
+        root.protocol("WM_DELETE_WINDOW", on_closing)
+
+
+        tk.mainloop()
+
+    except Exception:
+        print("Error in filenames")
+
+def on_grid_center_tutorial():
+    n_lines = 50 # 50 nails to a side of the canvas
+
+    final_image_filename = "cute_image_4_hexagon_output_final.jpg"
+    centers_of_grid_filename = "grid_centers_filename.txt"
+
+    try:
+        final_image = Image.open(final_image_filename)
+
+    except Exception:
+        print("Error in filename")
+        return
+
+    w, h = final_image.size
+
+    if not path.isfile(centers_of_grid_filename):
+        # generate file
+        non_empty_squares = []
+        for x in range(n_lines):
+            for y in range(n_lines):
+                square = final_image.crop((x*w/n_lines, y*h/n_lines, (x + 1)*w/n_lines, (y + 1)*h/n_lines))
+                average_color = square.resize((1, 1), resample=PIL.Image.LANCZOS).getpixel((0, 0))
+                if average_color < 254:
+                    non_empty_squares.append((x, y))
+
+        # shuffle center of grid order
+        shuffle(non_empty_squares)
+        with open(centers_of_grid_filename, "w") as grid_file:
+            grid_file.writelines([f"{square[0]}, {square[1]}\n" for square in non_empty_squares])
+
+    non_empty_squares = []
+    with open(centers_of_grid_filename, "r") as grid_file:
+        non_empty_squares = [tuple(map(int, line.split(", "))) for line in grid_file.readlines()]
+
+    print(non_empty_squares)
 
     root = tk.Tk()
     root.geometry("1000x1000")
@@ -22,12 +109,17 @@ try:
 
     def on_next_center():
         # generate image to be shown in image canvas
-        if len(centers) > 0:
-            current_center = centers.pop(0)
-            current_hexagon_image = final_image.crop((current_center[0] - 50,
-                                                      current_center[1] - 50,
-                                                      current_center[0] + 50,
-                                                      current_center[1] + 50)).resize((800, 800))
+        if len(non_empty_squares) > 0:
+            current_square = non_empty_squares.pop(0)
+            current_hexagon_image = final_image.crop((current_square[0]*w/n_lines,
+                                                      current_square[1] * h / n_lines,
+                                                      (current_square[0] + 1) * w / n_lines,
+                                                      (current_square[1] + 1) * h / n_lines))
+            current_hexagon_image = current_hexagon_image.resize((800, 800))
+
+            draw = ImageDraw.Draw(current_hexagon_image)
+            font = ImageFont.truetype("Roboto-Black.ttf", 40)
+            draw.text((0, 0), f"{current_square[0], current_square[1]}", fill="green", font=font)
 
             canvas_image = ImageTk.PhotoImage(current_hexagon_image)
             canvas.create_image(0, 0, anchor=tk.NW, image=canvas_image)
@@ -36,22 +128,21 @@ try:
             print("You have finished the drawing. Exiting")
             root.destroy()
 
-
     next_hexagon_button = tk.Button(root, text="Next hexagon", command=on_next_center)
     next_hexagon_button.place(x=500, y=950)
 
     def on_closing():
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
             # edit the file by removing the hexagon centers which have been drawn
-            with open(hexagon_centers_filename, "w") as f:
-                f.writelines([f"{c}\n" for c in centers])
+            with open(centers_of_grid_filename, "w") as grid_file:
+                grid_file.writelines([f"{square[0]}, {square[1]}\n" for square in non_empty_squares])
 
             root.destroy()
 
     root.protocol("WM_DELETE_WINDOW", on_closing)
 
-
     tk.mainloop()
 
-except Exception:
-    print("Error in filenames")
+if __name__ == "__main__":
+    on_grid_center_tutorial()
+
