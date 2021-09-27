@@ -84,6 +84,7 @@ def on_hex_center_tutorial():
 
     def on_closing():
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            print(f"Progress: {100*(1 - len(centers)/8756):.0f}%")
             # edit the file by removing the hexagon centers which have been drawn
             with open(hexagon_centers_filename, "w") as f:
                 f.writelines([f"{c}\n" for c in centers])
@@ -162,6 +163,8 @@ def on_grid_center_tutorial():
 
     def on_closing():
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            print(f"Progress: {100*(1 - len(non_empty_squares)/8756):.0f}%")
+            print("Aaaaaaaaaaaaaaaaa")
             # edit the file by removing the hexagon centers which have been drawn
             with open(centers_of_grid_filename, "w") as grid_file:
                 grid_file.writelines([f"{square[0]}, {square[1]}\n" for square in non_empty_squares])
