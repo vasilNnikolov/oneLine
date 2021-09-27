@@ -216,20 +216,19 @@ def set_final_screen_hexagon_export(app: OneLineProgram):
     def finish_drawing_path():
         command = input("are you sure you want to finish drawing the path?: y/n")
         if command.lower() == "y":
-            # app.pixel_list.pop(0)
             app.window.unbind("u")
             filename_without_extension = app.filename.split(".")[0]
 
             # save hexagon order to txt file
             output_hexagon_centers = olh.get_hexagon_centers(output_image_size[0], output_image_size[1], output_hexagon_height)
             shuffled_pixels = [output_hexagon_centers[i] for i in app.pixel_list]
-            random.shuffle(shuffled_pixels)
-            with open(f"{filename_without_extension}_centers_order_final.txt", "w") as f:
+            # random.shuffle(shuffled_pixels)
+            with open(f"{filename_without_extension}_centers_order_final_v3.txt", "w") as f:
                 f.writelines([f"{pixel_coordinates}\n" for pixel_coordinates in shuffled_pixels])
 
             # make output image
             final_image = make_final_hexagon_image_3(app, output_image_size, output_hexagon_height)
-            final_image.save(f"{filename_without_extension}_hexagon_output_final.jpg")
+            final_image.save(f"{filename_without_extension}_hexagon_output_final_v3.jpg")
 
     tk.Button(app.window, text="Finish", command=finish_drawing_path).place(x=0.8*app.size[0], y=0.9*app.size[1])
 
@@ -471,6 +470,89 @@ def make_final_hexagon_image_3(app: OneLineProgram, canvas_size, hexagon_height)
 
     return output_image
 
+def hexagon_image_from_given_file(canvas_size, hexagon_height):
+    # get turns for each color
+    calibrate_spiral.make_calibration_file(hexagon_height)
+    with open("calibration_file.txt", "r") as calib_file:
+        turns_by_color = [float(line.split(": ")[1]) for line in calib_file.readlines()]
+
+    w, h = canvas_size
+    output_image = Image.new("L", (w, h), 255)
+    hexagon_centers = olh.get_hexagon_centers(w, h, hexagon_height)
+
+    original_image = Image.open("cute_image_4.jpg").convert("L").resize((700, 700))
+    original_w, original_h = original_image.size
+
+    # get pixel list from file with centers
+    centers_order_filename = "cute_image_4_centers_order_final.txt"
+    with open(centers_order_filename, "r") as centers_file:
+        centers_in_order = [tuple(map(float, x[1:-2].split(", "))) for x in centers_file.readlines()]
+
+    # for each hexagon center in pixel list get the average color
+    progress_index = 1
+    for hexagon_order, hex_center in enumerate(centers_in_order):
+        # print progress
+        progress = hexagon_order/len(centers_in_order)
+        if progress > progress_index/100:
+            print(f"Progress: {progress:.2f}%")
+            progress_index += 1
+
+        scaled_hex_center = (int(hex_center[0]*original_w/w), int(hex_center[1]*original_h/h))
+        # clamp values of scaled hex center
+        scaled_hex_center = (max(0, min(scaled_hex_center[0], original_w - 1)),
+                             max(0, min(scaled_hex_center[1], original_h - 1)))
+        color = original_image.getpixel(scaled_hex_center)
+
+        # get turns from color
+        # turns = (255 - color) / 255 * 15
+        turns = turns_by_color[color]
+
+        start_point, end_point = (0, 0), (hexagon_height, hexagon_height)
+        current_center = hex_center
+
+        if hexagon_order == 0:
+            previous_center = centers_in_order[-1]
+            current_center = centers_in_order[0]
+            next_center = centers_in_order[1]
+            if are_centers_neighbouring(previous_center, current_center, hexagon_height):
+                start_point = ((previous_center[0] - current_center[0])/2 + int(0.7*hexagon_height),
+                               (previous_center[1] - current_center[1])/2 + int(0.5*hexagon_height))
+
+                end_point = ((next_center[0] - current_center[0])/2 + int(0.7*hexagon_height),
+                             (next_center[1] - current_center[1])/2 + int(0.5*hexagon_height))
+
+        elif 0 < hexagon_order < len(centers_in_order) - 1:
+            next_center = centers_in_order[hexagon_order + 1]
+            previous_center = centers_in_order[hexagon_order - 1]
+
+            start_point = ((previous_center[0] - current_center[0])/2 + int(0.7*hexagon_height),
+                           (previous_center[1] - current_center[1])/2 + int(0.5*hexagon_height))
+
+            end_point = ((next_center[0] - current_center[0])/2 + int(0.7*hexagon_height),
+                         (next_center[1] - current_center[1])/2 + int(0.5*hexagon_height))
+
+        elif hexagon_order == len(centers_in_order) - 1:
+            previous_center = centers_in_order[-2]
+            current_center = centers_in_order[-1]
+            next_center = centers_in_order[0]
+            if are_centers_neighbouring(next_center, current_center, hexagon_height):
+                start_point = ((previous_center[0] - current_center[0])/2 + int(0.7*hexagon_height),
+                               (previous_center[1] - current_center[1])/2 + int(0.5*hexagon_height))
+
+                end_point = ((next_center[0] - current_center[0])/2 + int(0.7*hexagon_height),
+                             (next_center[1] - current_center[1])/2 + int(0.5*hexagon_height))
+
+
+
+        image_to_paste = olh.make_hexagon_spiral(turns,
+                                                 (int(1.4 * hexagon_height), hexagon_height),
+                                                 start_point,
+                                                 end_point)
+        output_image.paste(image_to_paste, (int(hex_center[0] - 0.7 * hexagon_height), int(hex_center[1] - hexagon_height // 2)),
+                           mask=image_to_paste.convert("RGBA"))
+
+    return output_image
+
 def hexagon_image_random_start_end_2(filename, canvas_size, hexagon_height):
     # get turns for each color
     calibrate_spiral.make_calibration_file(hexagon_height)
@@ -572,4 +654,14 @@ def set_final_screen_pixel_SBS(app):
 
 def set_final_screen_superpixel_SBS(app):
     pass
+
+
+if __name__ == "__main__":
+    output_hexagon_height = 35
+    nPixels = 100
+    output_image_size = (int(output_hexagon_height*nPixels), int(output_hexagon_height*nPixels))
+
+    final_image_2 = hexagon_image_from_given_file(output_image_size, output_hexagon_height)
+    final_image_2.show()
+    final_image_2.save("cute_image_4_output_final_2.jpg")
 

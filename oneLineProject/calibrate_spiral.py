@@ -1,7 +1,7 @@
 import oneLineHexagons as olh
 
 
-MAX_TURNS = 15
+MAX_TURNS = 8
 
 def get_fill(turns, hexagon_height):
     """
