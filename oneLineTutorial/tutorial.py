@@ -56,6 +56,8 @@ def on_hex_center_tutorial():
                 # draw the lines coordinates
                 draw.text(((x + 1)*dw - current_center[0], 2*dh - 20),
                           str(x), font=font)
+                draw.text(((x + 1)*dw - current_center[0], 20),
+                          str(x), font=font)
 
             for y in visible_ys:
                 draw.line((0, (y + 1)*dh - current_center[1],
@@ -63,6 +65,8 @@ def on_hex_center_tutorial():
 
                 # draw the lines coordinates
                 draw.text((0, (y + 1)*dh - current_center[1] - 20),
+                          str(n_lines - y), font=font)
+                draw.text((2*dw - 50, (y + 1)*dh - current_center[1] - 20),
                           str(n_lines - y), font=font)
 
             draw.ellipse((dw - 2, dh - 2, dw + 2, dh + 2), fill="red")
