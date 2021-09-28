@@ -84,7 +84,7 @@ def on_hex_center_tutorial():
 
     def on_closing():
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
-            print(f"Progress: {100*(1 - len(centers)/8756):.0f}%")
+            print(f"Progress: {100*(1 - len(centers)/8756):.2f}%")
             # edit the file by removing the hexagon centers which have been drawn
             with open(hexagon_centers_filename, "w") as f:
                 f.writelines([f"{c}\n" for c in centers])
