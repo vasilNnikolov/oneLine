@@ -1,3 +1,5 @@
+import datetime
+import time
 import tkinter as tk
 from tkinter import messagebox
 from random import shuffle
@@ -7,6 +9,7 @@ import ImageFont
 import PIL.Image
 from PIL import Image, ImageTk
 from os import path
+
 
 
 def on_hex_center_tutorial():
@@ -34,10 +37,15 @@ def on_hex_center_tutorial():
     hexagon_height = 35
     dw, dh = w/n_lines, h/n_lines
     font = ImageFont.truetype("Roboto-Black.ttf", 10)
+    hexagons_done_in_session = 0
+    start_time = time.time()
+    print(start_time, hexagons_done_in_session)
 
     def on_next_center():
         # generate image to be shown in image canvas
         if len(centers) > 0:
+            nonlocal hexagons_done_in_session
+            hexagons_done_in_session += 1
             current_center = centers.pop(0)
             # find min and max coordinates for the image
             current_hexagon_image = final_image.crop((current_center[0] - dw,
@@ -84,7 +92,11 @@ def on_hex_center_tutorial():
 
     def on_closing():
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            nonlocal hexagons_done_in_session
             print(f"Progress: {100*(1 - len(centers)/8756):.3f}%")
+            duration = time.time() - start_time
+            time_to_finist_project = duration*len(centers)/hexagons_done_in_session
+            print(f"Time left: {str(datetime.timedelta(seconds=time_to_finist_project))}")
             # edit the file by removing the hexagon centers which have been drawn
             with open(hexagon_centers_filename, "w") as f:
                 f.writelines([f"{c}\n" for c in centers])
